@@ -81,7 +81,7 @@ NULL
 #' @rdname output-expectations
 expect_output <- function(object, regexp = NULL, ..., info = NULL, label = NULL) {
   lab <- make_label(object, label)
-  output <- evaluate_promise(object)$output
+  output <- capture_output(object)
 
   if (identical(regexp, NA)) {
     expect(
@@ -89,7 +89,7 @@ expect_output <- function(object, regexp = NULL, ..., info = NULL, label = NULL)
       sprintf("%s produced output.\n%s", lab, encodeString(output)),
       info = info
     )
-  } else if (is.null(regexp)) {
+  } else if (is.null(regexp) || identical(output, "")) {
     expect(
       !identical(output, ""),
       sprintf("%s produced no output", lab),
@@ -124,7 +124,7 @@ expect_error <- function(object, regexp = NULL, ..., info = NULL, label = NULL) 
       sprintf("%s threw an error.\n%s", lab, error$message),
       info = info
     )
-  } else if (is.null(regexp)) {
+  } else if (is.null(regexp) || is.null(error)) {
     expect(
       !is.null(error),
       sprintf("%s did not throw an error.", lab),
@@ -142,7 +142,7 @@ expect_message <- function(object, regexp = NULL, ..., all = FALSE,
                            info = NULL, label = NULL) {
 
   lab <- make_label(object, label)
-  messages <- evaluate_promise(object, capture_warnings = FALSE)$messages
+  messages <- capture_messages(object)
   n <- length(messages)
   bullets <- paste("* ", messages, collapse = "\n")
 
@@ -154,7 +154,7 @@ expect_message <- function(object, regexp = NULL, ..., all = FALSE,
       sprintf("%s showed %s.\n%s", lab, msg, bullets),
       info = info
     )
-  } else if (is.null(regexp)) {
+  } else if (is.null(regexp) || length(messages) == 0) {
     expect(
       length(messages) > 0,
       sprintf("%s showed %s", lab, msg),
@@ -172,7 +172,7 @@ expect_warning <- function(object, regexp = NULL, ..., all = FALSE,
                            info = NULL, label = NULL) {
 
   lab <- make_label(object, label)
-  warnings <- evaluate_promise(object, capture_messages = FALSE)$warnings
+  warnings <- capture_warnings(object)
   n <- length(warnings)
   bullets <- paste("* ", warnings, collapse = "\n")
 
@@ -184,7 +184,7 @@ expect_warning <- function(object, regexp = NULL, ..., all = FALSE,
       sprintf("%s showed %s.\n%s", lab, msg, bullets),
       info = info
     )
-  } else if (is.null(regexp)) {
+  } else if (is.null(regexp) || length(warnings) == 0) {
     expect(
       length(warnings) > 0,
       sprintf("%s showed %s", lab, msg),

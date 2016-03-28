@@ -1,3 +1,7 @@
+#' @importFrom magrittr %>%
+#' @export
+magrittr::`%>%`
+
 `%||%` <- function(a, b) if (is.null(a)) b else a
 
 starts_with <- function(string, prefix) {
@@ -15,10 +19,11 @@ rule <- function(..., pad = "-") {
   if (nargs() == 0) {
     title <- ""
   } else {
-    title <- paste0(...)
+    title <- paste0(..., " ")
   }
-  width <- getOption("width") - nchar(title) - 5
-  cat(title, " ", paste(rep(pad, width, collapse = "")), "\n", sep = "")
+  width <- getOption("width") - nchar(title)
+
+  cat(title, paste(rep(pad, width, collapse = "")), "\n", sep = "")
 }
 
 

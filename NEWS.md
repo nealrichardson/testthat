@@ -1,8 +1,13 @@
 # testthat 0.11.0.9000
 
+## Breaking changes
+
+The `expectation()` function now expects an expectation type (one of "success", "failure", "error", "skip", "warning") as first argument. Use `expect_true()` function instead.
+
+
 ## New expectations
 
-The expectation system got a thorough overhaul (#217). This primarily makes it easier to add new expectations in the future, but also included a thorough review of the documentation, ensuring that related expectations are are documented together, and have evocative names.
+The expectation system got a thorough overhaul (#217). This primarily makes it easier to add new expectations in the future, but also included a thorough review of the documentation, ensuring that related expectations are documented together, and have evocative names.
 
 One useful change is that most expectations invisibly return the input `object`. This makes it possible to chain together expectations with magrittr:
     
@@ -13,10 +18,12 @@ factor("a") %>%
   expect_length(1)
 ```
 
-The exception to this rule are the expectations that evaluate (i.e.
-for messages, warnings, errors, output etc), which invisibly return `NULL`. 
+(And to make this style even easier, testthat now re-exports the pipe, #412).
 
-These functions are now more consistent: using `NA` will cause a failure if there is a errors/warnings/mesages/output (i.e. they're not missing), and will `NULL` fail if there aren't any errors/warnings/mesages/output. This previously didn't work for `expect_output()` (#323), and the error messages were confusing with `expect_error(..., NA)` (#342, @nealrichardson + @krlmlr, #317).
+The exception to this rule are the expectations that evaluate (i.e.
+for messages, warnings, errors, output etc), which invisibly return `NULL`. These functions are now more consistent: using `NA` will cause a failure if there is a errors/warnings/mesages/output (i.e. they're not missing), and will `NULL` fail if there aren't any errors/warnings/mesages/output. This previously didn't work for `expect_output()` (#323), and the error messages were confusing with `expect_error(..., NA)` (#342, @nealrichardson + @krlmlr, #317).
+
+Another change is that `expect_output()` now requires you to explicit print the output if you want to test a print method: `expect_output("a", "a")` will fail, `expect_output(print("a"), "a")` will succeed.
 
 There are six new expectations:
 
@@ -41,6 +48,7 @@ A number of older features have been deprecated:
 * `not()` has been deprecated. Please use the explicit individual forms
   `expect_error(..., NA)` , `expect_warning(.., NA)` and so on.
 
+
 ## Expectations are conditions
 
 Now all expectations are also conditions, and R's condition system is used to signal failures and successes (#360, @krlmlr). All known conditions (currently, "error", "warning", "message", "failure", and "success") are converted to expectations using the new `as.expectation()`. This allows third-party test packages (such as `assertthat`, `testit`, `ensurer`, `checkmate`, `assertive`) to seamlessly establish `testthat` compatibility by issuing custom error conditions (e.g., `structure(list(message = "Error message"), class = c("customError", "error", "condition"))`) and then implementing `as.expectation.customError()`. The `assertthat` package contains an example.
@@ -58,7 +66,9 @@ The reporters system class has been considerably refactored to make existing rep
     * `test_start()` and `test_end()` both get the context and test.
     * `context_start()` and `context_end()` get the context. 
 
-* Warnings are now captured and reported in most reporters. 
+* Warnings are now captured and reported in most reporters.
+
+* The reporter output goes to the original standard output and is not affected by `sink()` and `expect_output()` (#420, @krlmlr).
 
 * The default summary reporter lists all warnings (#310), and all skipped
   tests (@krlmlr, #343). New option `testthat.summary.max_reports` limits 
@@ -72,8 +82,10 @@ The reporters system class has been considerably refactored to make existing rep
 
 ## Other
 
-* `evaluate_promise()` gains arguments `capture_warnings` and 
-  `capture_messages()` so you can control exactly what's captured.
+* New functions `capture_output()`, `capture_message()`, and 
+  `capture_warnings()` selectively capture function output. These are 
+  used in `expect_output()`, `expect_message()` and `expect_warning()`
+  to allow other types out output to percolate up (#410).
 
 * `try_again()` allows you to retry code multiple times until it succeeds
   (#240).
@@ -82,7 +94,8 @@ The reporters system class has been considerably refactored to make existing rep
   all testing functions are available.
 
 * `source_test_helpers()` gets a useful default path: the testthat tests 
-  directory.
+  directory. It defaults to the `test_env()` to be consistent with the
+  other source functions (#415).
 
 * `test_file()` now loads helpers in the test directory before running
   the tests (#350).
@@ -91,6 +104,8 @@ The reporters system class has been considerably refactored to make existing rep
   that work interactively and when called from tests (#345).
 
 * Add `skip_if_not()` helper.
+
+* Add `skip_on_bioc()` helper (@thomasp85).
 
 * `make_expectation()` uses `expect_equal()`.
 
@@ -123,7 +138,7 @@ The reporters system class has been considerably refactored to make existing rep
 * `expect_identical()` and `is_identical_to()` now use `compare()` for more
   detailed output of differences (#319, @krlmlr).
 
-* Added [Catch](https://github.com/philsquared/Catch) for unit testing of C++ code.
+* Added [Catch](https://github.com/philsquared/Catch) v1.2.1 for unit testing of C++ code.
   See `?use_catch()` for more details. (@kevinushey)
 
 # testthat 0.11.0
