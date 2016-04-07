@@ -15,7 +15,6 @@ Imports:
     digest,
     crayon,
     praise,
-    lazyeval,
     magrittr,
     R6,
     methods
