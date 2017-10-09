@@ -192,6 +192,11 @@ format.expectation_error <- function(x, ...) {
 }
 
 #' @export
+format.expectation_failure <- function(x, ...) {
+  paste(c(x$message, create_traceback(x$call)), collapse = "\n")
+}
+
+#' @export
 format.expectation <- function(x, ...) {
   x$message
 }
